@@ -1,8 +1,7 @@
-import os
 from dotenv import load_dotenv
 from crewai import Crew, Process, Task
 from Agents.Crew_Configuration import TradingAgents
-from logger import setup_logger
+from core.logger import setup_logger
 
 logger = setup_logger()
 
@@ -10,9 +9,16 @@ logger = setup_logger()
 load_dotenv()
 
 
-
-
 def main():
+    """Main function to run the Algotrading CrewAI System.
+    Main Flow:
+    1. Initialize Agents
+    2. Define Tasks
+    3. Assemble the Crew
+    4. Kickoff the Crew
+    5. Log Results
+    6. Repeat for multiple stocks
+    """
     logger.info("Starting Algotrading CrewAI System...")
 
     # 1. Initialize Agents

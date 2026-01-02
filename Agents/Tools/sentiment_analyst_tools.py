@@ -1,11 +1,10 @@
 import os
-import time
 from datetime import datetime, timedelta
 import yfinance as yf
 from serpapi import GoogleSearch
 from diskcache import Cache
 from crewai.tools import tool
-from logger import setup_logger
+from core.logger import setup_logger
 
 logger = setup_logger()
 

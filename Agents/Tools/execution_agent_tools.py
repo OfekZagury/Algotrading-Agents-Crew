@@ -3,7 +3,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopLossRequest
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
 from crewai.tools import tool
-from logger import setup_logger
+from core.logger import setup_logger
 
 logger = setup_logger()
 

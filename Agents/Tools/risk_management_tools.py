@@ -2,7 +2,7 @@ import yfinance as yf
 from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
-from logger import setup_logger
+from core.logger import setup_logger
 
 logger = setup_logger()
 

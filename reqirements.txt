@@ -5,3 +5,4 @@ serpapi
 diskcache
 pandas_ta
 alpaca-py
+pytest
