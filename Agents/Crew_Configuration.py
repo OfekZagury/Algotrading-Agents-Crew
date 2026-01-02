@@ -3,10 +3,10 @@ from langchain.llms import Ollama
 # from langchain_openai import ChatOpenAI
 
 # Psuedo-tools imports - will be replaced with actual implementations
-from tools.news_scraper import NewsScraperTool
-from tools.market_data import TechnicalAnalysisTool
-from tools.calculator_tool import CalculatorTool
-from tools.alpaca_execution import AlpacaExecutionTool
+from Agents.Tools.news_scraper import NewsScraperTool
+from Agents.Tools.market_data import TechnicalAnalysisTool
+from Agents.Tools.calculator_tool import CalculatorTool
+from Agents.Tools.alpaca_execution import AlpacaExecutionTool
 
 class TradingAgents:
     def __init__(self):

@@ -1,0 +1,5 @@
+crewai
+langchain
+yfinance
+serpapi
+diskcache
