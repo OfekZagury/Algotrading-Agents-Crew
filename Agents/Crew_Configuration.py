@@ -1,10 +1,11 @@
 from crewai import Agent
-from langchain.llms import Ollama
+# from langchain.llms import Ollama
 # from langchain_openai import ChatOpenAI
 
 from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
 from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
 from Agents.Tools.risk_management_tools import find_support_level, calculate_risk_parameters
+from Agents.Tools.execution_agent_tools import get_buying_power, submit_bracket_order
 
 class TradingAgents:
     def __init__(self):
@@ -86,17 +87,20 @@ class TradingAgents:
     def execution_agent(self):
         return Agent(
             role='Head of Execution',
-            goal='Execute precise Bracket Orders (Entry + SL + TP) on Alpaca based on Risk Manager params.',
-            backstory="""You receive precise 'Entry Price', 'Stop Loss', and 'Take Profit' values from the Risk Manager.
-            Your execution process is strict:
-            1. Check account 'Buying Power' using the Alpaca tool.
-            2. If funds allow, submit a BRACKET ORDER (Limit Buy + attached Stop Loss & Take Profit).
-               - Do NOT send a simple market order. You must attach the protection levels immediately.
-            3. Return the executing Order ID and Status as confirmation.
+            goal='Execute precise Bracket Orders via Alpaca based on approved Risk parameters.',
+            backstory="""You are the final gatekeeper. You receive a structured execution plan from the Risk Manager.
 
-            If buying power is insufficient, abort and output 'INSUFFICIENT FUNDS'.""",
+            Protocol:
+            1. **Validation**: Check if the Risk Manager returned `"is_valid": True`. If False, STOP immediately and report the error.
+            2. **Funds Check**: Call `get_buying_power()`. Ensure you have enough cash to cover the `entry_price`.
+            3. **Execution**: 
+               - If funds are sufficient, call `submit_bracket_order`.
+               - Pass the EXACT `stop_loss` and `take_profit` figures provided by the Risk Manager.
+               - Note: The tool uses a Market Order for entry to ensure immediate execution.
+
+            Your Final Output: The confirmed Alpaca `order_id` and status, or a specific reason for abortion (e.g., "Insufficient Funds").""",
             verbose=True,
-            tools=[],
+            tools=[get_buying_power, submit_bracket_order],
             llm=self.llm,
             allow_delegation=False
         )

@@ -2,6 +2,8 @@ import os
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopLossRequest
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
+from crewai.tools import tool
+
 
 # Initialize the client (Assumption: keys are in .env)
 # Note: paper=True is critical for paper trading!
@@ -12,7 +14,7 @@ trading_client = None
 if api_key and secret_key:
     trading_client = TradingClient(api_key, secret_key, paper=True)
 
-
+@tool("Checks the available cash (buying power) in the Alpaca Paper account")
 def get_buying_power() -> float:
     """
     Checks the available cash (buying power) in the Alpaca Paper account.
@@ -32,6 +34,7 @@ def get_buying_power() -> float:
         return 0.0
 
 
+@tool("Submits a BRACKET ORDER to Alpaca with Take Profit and Stop Loss")
 def submit_bracket_order(symbol: str, take_profit_price: float, stop_loss_price: float, qty: int = 1) -> dict:
     """
     Submits a complex BRACKET ORDER to Alpaca.
