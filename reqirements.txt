@@ -3,3 +3,4 @@ langchain
 yfinance
 serpapi
 diskcache
+pandas_ta

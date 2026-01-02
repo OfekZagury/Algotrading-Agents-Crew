@@ -2,54 +2,60 @@ from crewai import Agent
 from langchain.llms import Ollama
 # from langchain_openai import ChatOpenAI
 
-# Psuedo-tools imports - will be replaced with actual implementations
 from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
+from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
 
 class TradingAgents:
     def __init__(self):
         # self.llm = Ollama(model="llama3")
         self.llm = None
 
-        def sentiment_analyst_agent(self):
-            return Agent(
-                role='Senior Market News Analyst',
-                goal='Analyze market news and sentiment for specific stocks to determine market mood.',
-                backstory="""You are an expert market analyst executing a strict two-step workflow:
+    def sentiment_analyst_agent(self):
+        return Agent(
+            role='Senior Market News Analyst',
+            goal='Analyze market news and sentiment for specific stocks to determine market mood.',
+            backstory="""You are an expert market analyst executing a strict two-step workflow:
 
-                            1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
-                            2. Use `get_google_trends` to validate sentiment intensity. High trends amplify the news impact; low trends suggest weak market interest.
-                            
-                            Your final output must strictly follow this format:
-                            - Sentiment: Positive / Negative / Neutral
-                            - News Summary: (Key drivers found)
-                            - Trend Score: (Value & explanation of how it impacts your confidence)""",
-                verbose=True,
-                tools=[fetch_stock_news, get_google_trends],
-                # Pseudo-tools, will be replaced with actual implementations
-                llm=self.llm,
-                allow_delegation=False
-            )
+            1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
+            2. Use `get_google_trends` to validate sentiment intensity. High trends amplify the news impact; low trends suggest weak market interest.
+            
+            Your final output must strictly follow this format:
+            - Sentiment: Positive / Negative / Neutral
+            - News Summary: (Key drivers found)
+            - Trend Score: (Value & explanation of how it impacts your confidence)""",
+            verbose=True,
+            tools=[fetch_stock_news, get_google_trends],
+            llm=self.llm,
+            allow_delegation=False
+        )
 
     def technical_strategist_agent(self):
         return Agent(
             role='Technical Indicator Specialist',
-            goal='Analyze stock charts using strict RSI and MACD rules to identify entry points.',
-            backstory="""You are a strict quantitative trader. You do not guess; you follow the math.
-            You must analyze the data provided by the tools and output a technical analysis based STRICTLY on these rules:
+            goal='Analyze technical indicators from tool output to generate strict BUY/SELL/WAIT signals.',
+            backstory="""You are a strict quantitative trader. You do not analyze charts visually; you analyze the JSON data returned by `calculate_indicators`.
 
-            1. **RSI Strategy**:
-               - A STRONG BUY signal is when RSI is below 30 (Oversold).
-               - A MODERATE BUY signal is when RSI is between 30 and 45 AND rising (current RSI > previous RSI).
-               - A SELL/AVOID signal is when RSI is above 70 (Overbought).
+            Apply these EXACT rules to the data:
 
-            2. **MACD Strategy**:
-               - A BUY signal exists ONLY if the MACD Line crosses ABOVE the Signal Line (Bullish Crossover).
-               - If the MACD Histogram is positive and increasing, the signal is stronger.
-               - If the MACD Line is below the Signal Line, it is a Bearish signal (do not buy).
+            1. **RSI Logic** (Check 'RSI' value):
+               - **STRONG BUY**: RSI < 30.
+               - **MODERATE BUY**: RSI between 30 and 45.
+               - **SELL/WAIT**: RSI > 45 (Not an attractive entry point).
+               - **STRONG SELL**: RSI > 70.
 
-            Your final output must state clearly if the technical indicators suggest 'BUY', 'SELL', or 'WAIT', citing the specific values of RSI and MACD that led to this decision.""",
+            2. **MACD Logic** (Check 'Trend' and 'MACD_Line'):
+               - **BUY SIGNAL**: The 'Trend' field is 'Bullish' (MACD_Line > Signal_Line).
+               - **SELL SIGNAL**: The 'Trend' field is 'Bearish'.
+
+            **Final Decision Matrix**:
+            - **BUY**: Requires BOTH a Bullish MACD Trend AND RSI < 45.
+            - **WAIT**: If MACD is Bullish but RSI is too high (>45), or if MACD is Bearish.
+            - **SELL**: If RSI > 70.
+
+            Output format:
+            "DECISION: [BUY/SELL/WAIT] | DATA: RSI=[Value], MACD=[Trend]" """,
             verbose=True,
-            tools=[TechnicalAnalysisTool()], # Pseudo-tools, will be replaced with actual implementations
+            tools=[get_historical_data, calculate_indicators],
             llm=self.llm,
             allow_delegation=False
         )
@@ -66,7 +72,7 @@ class TradingAgents:
 
             Output the precise Entry Price, Stop Loss, and Take Profit values based on these calculations.""",
             verbose=True,
-            tools=[TechnicalAnalysisTool(), CalculatorTool()], # Pseudo-tools, will be replaced with actual implementations
+            tools=[],
             llm=self.llm,
             allow_delegation=False
         )
@@ -84,7 +90,7 @@ class TradingAgents:
 
             If buying power is insufficient, abort and output 'INSUFFICIENT FUNDS'.""",
             verbose=True,
-            tools=[AlpacaExecutionTool()], # Pseudo-tools, will be replaced with actual implementations
+            tools=[],
             llm=self.llm,
             allow_delegation=False
         )
