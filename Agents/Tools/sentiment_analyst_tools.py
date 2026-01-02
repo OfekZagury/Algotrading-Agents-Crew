@@ -5,6 +5,9 @@ import yfinance as yf
 from serpapi import GoogleSearch
 from diskcache import Cache
 from crewai.tools import tool
+from logger import setup_logger
+
+logger = setup_logger()
 
 # Initialize file-based cache
 # The .cache directory will be created automatically to store results
@@ -29,7 +32,7 @@ def fetch_stock_news(symbol: str, days_back: int = 3) -> list[str]:
     if cache_key in cache:
         return cache[cache_key]
 
-    print(f"Fetching fresh news for {symbol}...")
+    logger.info(f"Fetching fresh news for {symbol}...")
 
     try:
         ticker = yf.Ticker(symbol)
@@ -90,11 +93,11 @@ def get_google_trends(symbol: str) -> int:
     if cache_key in cache:
         return cache[cache_key]
 
-    print(f"Checking Google Trends for {symbol}...")
+    logger.info(f"Checking Google Trends for {symbol}...")
 
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
-        print("Warning: SERPAPI_API_KEY not found in environment variables.")
+        logger.error("Warning: SERPAPI_API_KEY not found in environment variables.")
         return 0
 
     try:
@@ -131,5 +134,5 @@ def get_google_trends(symbol: str) -> int:
         return hype_score
 
     except Exception as e:
-        print(f"Error fetching trends for {symbol}: {e}")
+        logger.error(f"Error fetching trends for {symbol}: {e}")
         return 0

@@ -4,6 +4,9 @@ import yfinance as yf
 from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
+from logger import setup_logger
+
+logger = setup_logger()
 
 
 # Initialize file-based cache
@@ -27,7 +30,7 @@ def get_historical_data(symbol: str, period: str = "1mo") -> str:
     if cache_key in cache:
         return cache[cache_key]
 
-    print(f"Fetching historical data for {symbol}...")
+    logger.info(f"Fetching historical data for {symbol}...")
 
     try:
         # Download data using yfinance
@@ -64,7 +67,7 @@ def calculate_indicators(symbol: str) -> dict:
     if cache_key in cache:
         return cache[cache_key]
 
-    print(f"Calculating indicators for {symbol}...")
+    logger.info(f"Calculating indicators for {symbol}...")
 
     try:
         # Fetch enough data for MACD (requires at least 26 periods)

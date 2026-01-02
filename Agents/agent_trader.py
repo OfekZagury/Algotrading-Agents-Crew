@@ -2,13 +2,18 @@ import os
 from dotenv import load_dotenv
 from crewai import Crew, Process, Task
 from Agents.Crew_Configuration import TradingAgents
+from logger import setup_logger
+
+logger = setup_logger()
 
 # Load environment variables (API keys)
 load_dotenv()
 
 
+
+
 def main():
-    print("Starting Algotrading CrewAI System...")
+    logger.info("Starting Algotrading CrewAI System...")
 
     # 1. Initialize Agents
     agents_factory = TradingAgents()
@@ -22,7 +27,7 @@ def main():
     symbols = ['PLTR', 'NFLX', 'PLTK']
 
     for symbol in symbols:
-        print(f"\n\n--- Starting Analysis for {symbol} ---")
+        logger.info(f"\n\n--- Starting Analysis for {symbol} ---")
 
         # 2. Define Tasks
         # Task 1: Sentiment Analysis
@@ -88,8 +93,8 @@ def main():
         # 4. Kickoff!
         result = trading_crew.kickoff()
 
-        print(f"\nFinished cycle for {symbol}. Result:")
-        print(result)
+        logger.info(f"\nFinished cycle for {symbol}. Result:")
+        logger.info(result)
 
 
 if __name__ == "__main__":

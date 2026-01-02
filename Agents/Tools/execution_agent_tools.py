@@ -3,7 +3,9 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopLossRequest
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
 from crewai.tools import tool
+from logger import setup_logger
 
+logger = setup_logger()
 
 # Initialize the client (Assumption: keys are in .env)
 # Note: paper=True is critical for paper trading!
@@ -30,7 +32,7 @@ def get_buying_power() -> float:
         # Buying power for day trading is usually 4x cash, but we look at 'cash' or 'regt_buying_power'
         return float(account.buying_power)
     except Exception as e:
-        print(f"Error fetching account info: {e}")
+        logger.error(f"Error fetching account info: {e}")
         return 0.0
 
 
@@ -54,8 +56,8 @@ def submit_bracket_order(symbol: str, take_profit_price: float, stop_loss_price:
     if not trading_client:
         return {"status": "error", "message": "Alpaca client not initialized (missing keys)."}
 
-    print(f"Executing BRACKET ORDER for {symbol} | Qty: {qty}")
-    print(f"SL: {stop_loss_price} | TP: {take_profit_price}")
+    logger.info(f"Executing BRACKET ORDER for {symbol} | Qty: {qty}")
+    logger.info(f"SL: {stop_loss_price} | TP: {take_profit_price}")
 
     try:
         # Construct Take Profit Request
@@ -87,10 +89,10 @@ def submit_bracket_order(symbol: str, take_profit_price: float, stop_loss_price:
             "filled_qty": order.filled_qty  # Note: Likely 0 at moment of submission
         }
 
-        print(f"✅ Order submitted successfully! ID: {order.id}")
+        logger.info(f"✅ Order submitted successfully! ID: {order.id}")
         return result
 
     except Exception as e:
         error_msg = f"Order failed: {str(e)}"
-        print(f"❌ {error_msg}")
+        logger.error(f"❌ {error_msg}")
         return {"status": "error", "message": error_msg}

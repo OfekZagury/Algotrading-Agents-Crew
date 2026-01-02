@@ -2,6 +2,9 @@ import yfinance as yf
 from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
+from logger import setup_logger
+
+logger = setup_logger()
 
 
 
@@ -25,7 +28,7 @@ def find_support_level(symbol: str) -> float:
     if cache_key in cache:
         return cache[cache_key]
 
-    print(f"Calculating support level for {symbol} (Last 30 Days)...")
+    logger.info(f"Calculating support level for {symbol} (Last 30 Days)...")
 
     try:
         # We fetch 2 months to ensure we have at least 30 trading days
@@ -45,7 +48,7 @@ def find_support_level(symbol: str) -> float:
         return result
 
     except Exception as e:
-        print(f"Error finding support for {symbol}: {e}")
+        logger.error(f"Error finding support for {symbol}: {e}")
         return 0.0
 
 
