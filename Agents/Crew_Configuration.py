@@ -4,6 +4,7 @@ from langchain.llms import Ollama
 
 from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
 from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
+from Agents.Tools.risk_management_tools import find_support_level, calculate_risk_parameters
 
 class TradingAgents:
     def __init__(self):
@@ -63,16 +64,21 @@ class TradingAgents:
     def risk_management_agent(self):
         return Agent(
             role='Risk & Strategy Manager',
-            goal='Define trade parameters: Entry, Stop Loss (2% below support), and Take Profit (1:3 ratio).',
-            backstory="""You must strictly calculate trade parameters using these rules:
-            1. Identify the nearest Support Level in the Daily time frame.
-            2. Set Stop Loss (SL) = Support Level * 0.98 (2% buffer below support).
-            3. Calculate Risk = Current Price - Stop Loss.
-            4. Set Take Profit (TP) = Current Price + (Risk * 3) to ensure a 1:3 Risk/Reward ratio.
+            goal='Validate trade viability and retrieve strict Entry/SL/TP values using risk tools.',
+            backstory="""You are a precise Risk Manager. You DO NOT perform math yourself.
+            You must execute this strictly tool-based workflow:
 
-            Output the precise Entry Price, Stop Loss, and Take Profit values based on these calculations.""",
+            1. Receive the 'Current Price' from the Technical Strategist's analysis.
+            2. Call `find_support_level(symbol)` to get the recent support price.
+            3. Call `calculate_risk_parameters(current_price, support_level)`. This tool will return a JSON.
+
+            4. **Analyze the Tool Output**:
+               - If the tool returns `"is_valid": False`: Abort the trade immediately. Output "RISK ASSESSMENT FAILED" and the error reason.
+               - If the tool returns `"is_valid": True`: Extract the precise 'entry_price', 'stop_loss', and 'take_profit'.
+
+            Your final answer must be a clear execution order containing those three exact numbers for the next agent.""",
             verbose=True,
-            tools=[],
+            tools=[find_support_level, calculate_risk_parameters],
             llm=self.llm,
             allow_delegation=False
         )
