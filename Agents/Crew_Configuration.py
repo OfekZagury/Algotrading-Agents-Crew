@@ -3,30 +3,32 @@ from langchain.llms import Ollama
 # from langchain_openai import ChatOpenAI
 
 # Psuedo-tools imports - will be replaced with actual implementations
-from Agents.Tools.news_scraper import NewsScraperTool
-from Agents.Tools.market_data import TechnicalAnalysisTool
-from Agents.Tools.calculator_tool import CalculatorTool
-from Agents.Tools.alpaca_execution import AlpacaExecutionTool
+from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
 
 class TradingAgents:
     def __init__(self):
         # self.llm = Ollama(model="llama3")
         self.llm = None
 
-    def sentiment_analyst_agent(self):
-        return Agent(
-            role='Senior Market News Analyst',
-            goal='Analyze market news and sentiment for specific stocks to determine market mood.',
-            backstory="""You are a veteran financial journalist with 20 years of experience.
-            You don't just read headlines; you understand the nuance behind them.
-            You know that "buy the rumor, sell the news" is real.
-            Your job is to scrape news, filter out the noise, and provide a clear
-            sentiment score (Positive/Negative/Neutral) with a brief summary.""",
-            verbose=True,
-            tools=[NewsScraperTool()], # Pseudo-tools, will be replaced with actual implementations
-            llm=self.llm,
-            allow_delegation=False
-        )
+        def sentiment_analyst_agent(self):
+            return Agent(
+                role='Senior Market News Analyst',
+                goal='Analyze market news and sentiment for specific stocks to determine market mood.',
+                backstory="""You are an expert market analyst executing a strict two-step workflow:
+
+                            1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
+                            2. Use `get_google_trends` to validate sentiment intensity. High trends amplify the news impact; low trends suggest weak market interest.
+                            
+                            Your final output must strictly follow this format:
+                            - Sentiment: Positive / Negative / Neutral
+                            - News Summary: (Key drivers found)
+                            - Trend Score: (Value & explanation of how it impacts your confidence)""",
+                verbose=True,
+                tools=[fetch_stock_news, get_google_trends],
+                # Pseudo-tools, will be replaced with actual implementations
+                llm=self.llm,
+                allow_delegation=False
+            )
 
     def technical_strategist_agent(self):
         return Agent(

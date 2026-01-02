@@ -4,12 +4,13 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from serpapi import GoogleSearch
 from diskcache import Cache
+from crewai.tools import tool
 
 # Initialize file-based cache
 # The .cache directory will be created automatically to store results
 cache = Cache(".cache")
 
-
+@tool("fetch_stock_news")
 def fetch_stock_news(symbol: str, days_back: int = 3) -> list[str]:
     """
     Fetches news headlines for a given stock symbol using yfinance.
@@ -72,6 +73,7 @@ def fetch_stock_news(symbol: str, days_back: int = 3) -> list[str]:
         return error_msg
 
 
+@tool("get_google_trends")
 def get_google_trends(symbol: str) -> int:
     """
     Checks the Google Trends 'Hype' score (0-100) for a stock symbol via SerpApi.
