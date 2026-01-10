@@ -1,6 +1,5 @@
 from crewai import Agent
-# from langchain.llms import Ollama
-# from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
 from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
@@ -9,8 +8,7 @@ from Agents.Tools.execution_agent_tools import get_buying_power, submit_bracket_
 
 class TradingAgents:
     def __init__(self):
-        # self.llm = Ollama(model="llama3")
-        self.llm = None
+        self.llm = ChatOpenAI(model="gpt-5", temperature=0)
 
     def sentiment_analyst_agent(self):
         return Agent(
