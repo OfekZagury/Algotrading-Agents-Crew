@@ -4,6 +4,7 @@ from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopL
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
 from crewai.tools import tool
 from core.logger import setup_logger
+from typing import Annotated
 
 logger = setup_logger()
 
@@ -37,19 +38,17 @@ def get_buying_power() -> float:
 
 
 @tool("Submits a BRACKET ORDER to Alpaca with Take Profit and Stop Loss")
-def submit_bracket_order(symbol: str, take_profit_price: float, stop_loss_price: float, qty: int = 1) -> dict:
+def submit_bracket_order(
+        symbol: Annotated[str, "The stock ticker to buy (e.g., 'AAPL')."],
+        take_profit_price: Annotated[float, "The price to set for the Take Profit order."],
+        stop_loss_price: Annotated[float, "The price to set for the Stop Loss order."],
+        qty: Annotated[int, "Number of shares to buy (default is 1 for safety)."] = 1
+    ) -> dict:
     """
     Submits a complex BRACKET ORDER to Alpaca.
     It buys the stock at MARKET price, and immediately attaches:
     1. A Take Profit Limit Order.
     2. A Stop Loss Stop Order.
-
-    Args:
-        symbol (str): The ticker to buy.
-        take_profit_price (float): The price to sell at profit.
-        stop_loss_price (float): The price to sell at loss.
-        qty (int): Number of shares to buy (Default is 1 for safety).
-
     Returns:
         dict: The order details including ID and Status.
     """

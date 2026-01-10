@@ -5,6 +5,7 @@ from serpapi import GoogleSearch
 from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
+from typing import Annotated
 
 logger = setup_logger()
 
@@ -13,14 +14,12 @@ logger = setup_logger()
 cache = Cache(".cache")
 
 @tool("fetch_stock_news")
-def fetch_stock_news(symbol: str, days_back: int = 3) -> list[str]:
+def fetch_stock_news(
+                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
+                days_back: Annotated[int, "How many days back to filter news"] = 3
+    ) -> list[str]:
     """
     Fetches news headlines for a given stock symbol using yfinance.
-
-    Args:
-        symbol (str): The stock ticker (e.g., 'PLTR').
-        days_back (int): How many days back to filter news.
-
     Returns:
         list[str]: A list of formatted news strings ready for the Agent to read.
     """
@@ -76,13 +75,11 @@ def fetch_stock_news(symbol: str, days_back: int = 3) -> list[str]:
 
 
 @tool("get_google_trends")
-def get_google_trends(symbol: str) -> int:
+def get_google_trends(
+                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
+    ) -> int:
     """
     Checks the Google Trends 'Hype' score (0-100) for a stock symbol via SerpApi.
-
-    Args:
-        symbol (str): The stock ticker.
-
     Returns:
         int: A score between 0 (no interest) and 100 (peak popularity).
     """

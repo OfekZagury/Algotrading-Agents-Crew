@@ -4,6 +4,7 @@ from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
+from typing import Annotated
 
 logger = setup_logger()
 
@@ -12,14 +13,12 @@ logger = setup_logger()
 cache = Cache(".cache")
 
 @tool("get_historical_data of candlestick data")
-def get_historical_data(symbol: str, period: str = "1mo") -> str:
+def get_historical_data(
+        symbol: Annotated[str, "The stock ticker (e.g., 'AAPL')."],
+        period: Annotated[str, "Data period to download (e.g., '1mo', '3mo', '1y')."] = "1mo"
+    ) -> str:
     """
     Fetches historical OHLCV (Open, High, Low, Close, Volume) data.
-
-    Args:
-        symbol (str): The stock ticker (e.g., 'AAPL').
-        period (str): Data period to download (e.g., '1mo', '3mo', '1y').
-
     Returns:
         str: A string representation of the DataFrame (last 5 rows) for the agent to review.
     """
@@ -50,13 +49,11 @@ def get_historical_data(symbol: str, period: str = "1mo") -> str:
 
 
 @tool("calculate RSI and MACD values and determine trend")
-def calculate_indicators(symbol: str) -> dict:
+def calculate_indicators(
+        symbol: Annotated[str, "The stock ticker (e.g., 'AAPL')."],
+    ) -> dict:
     """
     Calculates technical indicators (RSI, MACD) for the given stock.
-
-    Args:
-        symbol (str): The stock ticker.
-
     Returns:
         dict: A dictionary containing the latest RSI, MACD Line, Signal Line, and a calculated Trend.
     """

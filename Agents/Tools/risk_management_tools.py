@@ -3,6 +3,7 @@ from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
+from typing import Annotated
 
 logger = setup_logger()
 
@@ -12,13 +13,11 @@ logger = setup_logger()
 cache = Cache(".cache")
 
 @tool("Find Important Support Level (30 Days)")
-def find_support_level(symbol: str) -> float:
+def find_support_level(
+                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
+    ) -> float:
     """
     Identifies the significant support level based on the lowest low of the last 30 trading days.
-
-    Args:
-        symbol (str): The stock ticker (e.g., 'PLTR').
-
     Returns:
         float: The support price level (rounded to 2 decimals).
     """
@@ -53,19 +52,16 @@ def find_support_level(symbol: str) -> float:
 
 
 @tool("Calculate Risk Parameters (1:3 R/R)")
-def calculate_risk_parameters(current_price: float, support_level: float) -> dict:
+def calculate_risk_parameters(
+        current_price: Annotated[float, "The current market price."],
+        support_level: Annotated[float, "The identified support level."]
+    ) -> dict:
     """
     Calculates precise trade parameters based on the 1:3 Risk/Reward rule.
-
     Logic:
     1. Stop Loss = Support Level * 0.98 (2% buffer below support).
     2. Risk = Current Price - Stop Loss.
     3. Take Profit = Current Price + (Risk * 3).
-
-    Args:
-        current_price (float): The current market price.
-        support_level (float): The identified support level.
-
     Returns:
         dict: Containing 'entry', 'stop_loss', 'take_profit' and 'risk_per_share'.
               Returns an error dict if the trade is invalid (e.g. price below stop).
