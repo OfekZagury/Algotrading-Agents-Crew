@@ -15,7 +15,7 @@ class TradingAgents:
     def sentiment_analyst_agent(self):
         return Agent(
             role='Senior Market News Analyst',
-            goal='Analyze market news and sentiment for specific stocks to determine market mood.',
+            goal='Analyze market news and sentiment ONLY for the stocks [PLTR (palantir), NFLX (netflix), PLTK (playtika)] to determine market mood.',
             backstory="""You are an expert market analyst executing a strict two-step workflow:
 
             1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
@@ -40,9 +40,9 @@ class TradingAgents:
             Apply these EXACT rules to the data:
 
             1. **RSI Logic** (Check 'RSI' value):
-               - **STRONG BUY**: RSI < 30.
-               - **MODERATE BUY**: RSI between 30 and 45.
-               - **SELL/WAIT**: RSI > 45 (Not an attractive entry point).
+               - **STRONG BUY**: RSI <= 30.
+               - **MODERATE BUY**:  30 < RSI <= 50.
+               - **SELL/WAIT**: RSI > 50 (Not an attractive entry point).
                - **STRONG SELL**: RSI > 70.
 
             2. **MACD Logic** (Check 'Trend' and 'MACD_Line'):
@@ -50,8 +50,8 @@ class TradingAgents:
                - **SELL SIGNAL**: The 'Trend' field is 'Bearish'.
 
             **Final Decision Matrix**:
-            - **BUY**: Requires BOTH a Bullish MACD Trend AND RSI < 45.
-            - **WAIT**: If MACD is Bullish but RSI is too high (>45), or if MACD is Bearish.
+            - **BUY**: Requires BOTH a Bullish MACD Trend AND RSI <= 50.
+            - **WAIT**: If MACD is Bullish but RSI is too high (>50), or if MACD is Bearish.
             - **SELL**: If RSI > 70.
 
             Output format:

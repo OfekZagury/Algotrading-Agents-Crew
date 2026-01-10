@@ -57,6 +57,7 @@ def main():
                 3. Output the specific decision (BUY/SELL/WAIT) and the raw data.
             """,
             agent=technical_agent,
+            context=[task_news],  # Use the news to potentially inform technical decisions
             expected_output="JSON-like output with decision, RSI, MACD, and Current Price."
         )
 
@@ -65,7 +66,7 @@ def main():
         task_risk = Task(
             description=f"""
                 1. Read the Technical Agent's output. 
-                2. If the decision is NOT 'BUY', output "SKIP TRADE".
+                2. If decision is 'SELL' or 'WAIT', output "NO TRADE OPPORTUNITY" and stop.
                 3. If 'BUY', use the `find_support_level` and `calculate_risk_parameters` tools.
                 4. Return a validated JSON with Entry, Stop Loss, and Take Profit.
             """,
