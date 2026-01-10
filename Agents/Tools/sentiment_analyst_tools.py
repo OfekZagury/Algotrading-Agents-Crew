@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from time import sleep
 import yfinance as yf
 from serpapi import GoogleSearch
 from diskcache import Cache
@@ -93,8 +94,8 @@ def get_google_trends(
 
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
-        logger.error("Warning: SERPAPI_API_KEY not found in environment variables.")
-        return 0
+        logger.error("SERPAPI_API_KEY not found in environment variables.")
+        return -1  # Return -1 to indicate missing API key, not zero interest
 
     try:
         # Append "stock" to the query to filter out non-financial noise (e.g., Netflix the movie vs stock)
@@ -109,7 +110,19 @@ def get_google_trends(
         }
 
         search = GoogleSearch(params)
-        results = search.get_dict()
+
+        # Retry logic for network failures
+        results = None
+        for attempt in range(3):
+            try:
+                results = search.get_dict()
+                break
+            except Exception as e:
+                if attempt == 2:
+                    logger.error(f"SerpAPI failed after 3 attempts: {e}")
+                    return 0
+                logger.warning(f"SerpAPI attempt {attempt + 1} failed, retrying...")
+                sleep(1)
 
         # Extract data from the complex JSON response
         interest_over_time = results.get("interest_over_time", {})

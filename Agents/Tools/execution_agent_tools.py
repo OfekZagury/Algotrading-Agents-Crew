@@ -13,9 +13,13 @@ logger = setup_logger()
 api_key = os.getenv("ALPACA_API_KEY")
 secret_key = os.getenv("ALPACA_SECRET_KEY")
 
-trading_client = None
-if api_key and secret_key:
+if not api_key or not secret_key:
+    logger.critical("Alpaca credentials not found. Paper trading disabled.")
+    logger.critical("Please set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables.")
+    trading_client = None
+else:
     trading_client = TradingClient(api_key, secret_key, paper=True)
+    logger.info("Alpaca trading client initialized successfully (Paper Trading Mode)")
 
 @tool("Checks the available cash (buying power) in the Alpaca Paper account")
 def get_buying_power() -> float:
@@ -26,12 +30,18 @@ def get_buying_power() -> float:
         float: The amount of cash available for trading.
     """
     if not trading_client:
+        logger.error("Trading client not initialized - check API keys")
         return 0.0
 
     try:
         account = trading_client.get_account()
         # Buying power for day trading is usually 4x cash, but we look at 'cash' or 'regt_buying_power'
-        return float(account.buying_power)
+        buying_power = float(account.buying_power)
+        logger.info(f"Current buying power: ${buying_power:,.2f}")
+        return buying_power
+    except (ValueError, AttributeError) as e:
+        logger.error(f"Invalid buying power data: {e}")
+        return 0.0
     except Exception as e:
         logger.error(f"Error fetching account info: {e}")
         return 0.0
@@ -55,8 +65,15 @@ def submit_bracket_order(
     if not trading_client:
         return {"status": "error", "message": "Alpaca client not initialized (missing keys)."}
 
+    # Validate price levels
+    if stop_loss_price <= 0 or take_profit_price <= 0:
+        return {"status": "error", "message": "Invalid price levels: Prices must be positive"}
+
+    if stop_loss_price >= take_profit_price:
+        return {"status": "error", "message": "Invalid setup: Stop loss must be below take profit"}
+
     logger.info(f"Executing BRACKET ORDER for {symbol} | Qty: {qty}")
-    logger.info(f"SL: {stop_loss_price} | TP: {take_profit_price}")
+    logger.info(f"SL: ${stop_loss_price:.2f} | TP: ${take_profit_price:.2f}")
 
     try:
         # Construct Take Profit Request
@@ -85,6 +102,9 @@ def submit_bracket_order(
             "symbol": order.symbol,
             "side": str(order.side),
             "type": "BRACKET_MARKET",
+            "quantity": qty,
+            "stop_loss": stop_loss_price,
+            "take_profit": take_profit_price,
             "filled_qty": order.filled_qty  # Note: Likely 0 at moment of submission
         }
 

@@ -34,10 +34,16 @@ def find_support_level(
         df = yf.Ticker(symbol).history(period="2mo")
 
         if df.empty:
+            logger.error(f"No historical data found for {symbol}")
             return 0.0
 
         # Take exactly the last 30 candles
         last_30_days = df.tail(30)
+
+        # Validate we have sufficient data points
+        if len(last_30_days) < 20:
+            logger.warning(f"Only {len(last_30_days)} days available for support calculation (recommended: 30)")
+
         # Find the absolute lowest price reached during this period
         support_level = last_30_days['Low'].min()
 
@@ -68,6 +74,20 @@ def calculate_risk_parameters(
     """
 
     try:
+        # Validate inputs are positive
+        if current_price <= 0 or support_level <= 0:
+            return {
+                "error": "Invalid price inputs: Prices must be positive",
+                "is_valid": False
+            }
+
+        # Check if current price is below support (invalid setup)
+        if current_price < support_level:
+            return {
+                "error": "Invalid Setup: Current price is below support level",
+                "is_valid": False
+            }
+
         # 1. Calculate Stop Loss with a 2% buffer below support
         stop_loss = support_level * 0.98
 
