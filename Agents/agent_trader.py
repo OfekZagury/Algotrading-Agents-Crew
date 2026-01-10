@@ -52,10 +52,14 @@ def main():
         # Task 2: Technical Analysis
         # This agent fetches hard numbers. It doesn't strictly need the news, but runs in parallel/sequence.
         task_technical = Task(
-            description=f"""
-                1. Use the technical tool to calculate RSI, MACD, and Price for **{symbol}**.
-                2. Apply the strict BUY/SELL logic defined in your backstory.
-                3. Output the specific decision (BUY/SELL/WAIT) and the raw data.
+            description="""
+            1. Call 'calculate RSI and MACD values and determine trend' ONCE for {symbol}
+            2. Based on the results:
+               - RSI < 30 AND MACD Bullish → BUY signal
+               - RSI > 70 AND MACD Bearish → SELL signal  
+               - Otherwise → WAIT signal
+            3. Output format: "DECISION: [BUY/SELL/WAIT] | RSI: [value] | MACD: [Bullish/Bearish] | Price: [value]"
+            4. Do NOT call tools again after getting valid data.
             """,
             agent=technical_agent,
             context=[task_news],  # Use the news to potentially inform technical decisions
