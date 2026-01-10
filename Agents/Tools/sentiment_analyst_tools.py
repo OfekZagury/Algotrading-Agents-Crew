@@ -11,7 +11,7 @@ logger = setup_logger()
 
 # Initialize file-based cache
 # The .cache directory will be created automatically to store results
-cache = Cache(".cache")
+cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
 @tool("fetch_stock_news")
 def fetch_stock_news(

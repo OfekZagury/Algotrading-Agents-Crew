@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas_ta as ta
 import yfinance as yf
 from datetime import datetime
 from diskcache import Cache
@@ -10,7 +11,7 @@ logger = setup_logger()
 
 
 # Initialize file-based cache
-cache = Cache(".cache")
+cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
 @tool("get_historical_data of candlestick data")
 def get_historical_data(

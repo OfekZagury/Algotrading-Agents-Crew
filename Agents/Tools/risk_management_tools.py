@@ -10,7 +10,7 @@ logger = setup_logger()
 
 
 # Initialize file-based cache
-cache = Cache(".cache")
+cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
 @tool("Find Important Support Level (30 Days)")
 def find_support_level(
