@@ -88,7 +88,7 @@ def submit_bracket_order(
             "filled_qty": order.filled_qty  # Note: Likely 0 at moment of submission
         }
 
-        logger.info(f"✅ Order submitted successfully! ID: {order.id}")
+        logger.info(f"✅ Order submitted successfully! Symbol: {symbol} | ID: {order.id}")
         return result
 
     except Exception as e:

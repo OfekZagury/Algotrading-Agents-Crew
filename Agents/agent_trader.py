@@ -45,7 +45,8 @@ def main():
                 3. Provide a summary of key catalysts.
             """,
             agent=news_agent,
-            expected_output="A brief sentiment report with trend score."
+            expected_output="Sentiment: [Positive/Negative/Neutral] | News Summary: [...] | Trend Score: [value]"
+
         )
 
         # Task 2: Technical Analysis

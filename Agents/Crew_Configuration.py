@@ -21,10 +21,13 @@ class TradingAgents:
             1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
             2. Use `get_google_trends` to validate sentiment intensity. High trends amplify the news impact; low trends suggest weak market interest.
             
+            If tools return empty/null, output "INSUFFICIENT DATA - Cannot Assess Sentiment"
+            
             Your final output must strictly follow this format:
             - Sentiment: Positive / Negative / Neutral
             - News Summary: (Key drivers found)
-            - Trend Score: (Value & explanation of how it impacts your confidence)""",
+            - Trend Score: (Value & explanation of how it impacts your confidence)
+            """,
             verbose=True,
             tools=[fetch_stock_news, get_google_trends],
             llm=self.llm,
