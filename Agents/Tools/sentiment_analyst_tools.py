@@ -15,7 +15,7 @@ logger = setup_logger()
 # The .cache directory will be created automatically to store results
 cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
-# @tool("fetch_stock_news")
+@tool("fetch_stock_news")
 def fetch_stock_news(
                 symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
                 days_back: Annotated[int, "How many days back to filter news"] = 4
