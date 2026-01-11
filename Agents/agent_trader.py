@@ -52,7 +52,7 @@ def main():
         # Task 2: Technical Analysis
         # This agent fetches hard numbers. It doesn't strictly need the news, but runs in parallel/sequence.
         task_technical = Task(
-            description="""
+            description=f"""
             1. Call 'calculate RSI and MACD values and determine trend' ONCE for {symbol}
             2. Based on the results:
                - RSI < 30 AND MACD Bullish → BUY signal
@@ -70,7 +70,7 @@ def main():
         # CRITICAL: This task receives the output from 'task_technical' via 'context'.
         task_risk = Task(
             description=f"""
-                1. Read the Technical Agent's output. 
+                1. Read the Technical Agent's output on {symbol}.
                 2. If decision is 'SELL' or 'WAIT', output "NO TRADE OPPORTUNITY" and stop.
                 3. If 'BUY', use the `find_support_level` and `calculate_risk_parameters` tools.
                 4. Return a validated JSON with Entry, Stop Loss, and Take Profit.
@@ -84,7 +84,7 @@ def main():
         # CRITICAL: This task receives the output from 'task_risk'.
         task_execution = Task(
             description=f"""
-                1. Read the Risk Agent's plan.
+                1. Read the Risk Agent's plan for {symbol}.
                 2. If the plan says "SKIP TRADE" or is invalid, do nothing.
                 3. If valid, check buying power and submit the BRACKET ORDER to Alpaca.
             """,

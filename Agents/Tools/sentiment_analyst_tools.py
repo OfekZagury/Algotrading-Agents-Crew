@@ -7,6 +7,7 @@ from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
 from typing import Annotated
+from datetime import datetime
 
 logger = setup_logger()
 
@@ -14,10 +15,10 @@ logger = setup_logger()
 # The .cache directory will be created automatically to store results
 cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
-@tool("fetch_stock_news")
+# @tool("fetch_stock_news")
 def fetch_stock_news(
                 symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
-                days_back: Annotated[int, "How many days back to filter news"] = 3
+                days_back: Annotated[int, "How many days back to filter news"] = 4
     ) -> list[str]:
     """
     Fetches news headlines for a given stock symbol using yfinance.
@@ -41,14 +42,15 @@ def fetch_stock_news(
         cutoff_date = datetime.now() - timedelta(days=days_back)
 
         for item in news_items:
+            item = item['content']
             # yfinance returns timestamp in unix format
-            publish_time = item.get('providerPublishTime', 0)
-            publish_date = datetime.fromtimestamp(publish_time)
+            publish_time = item.get('pubDate', 0)
+            publish_date = datetime.fromisoformat(publish_time)
 
             if publish_date > cutoff_date:
                 title = item.get('title', 'No Title')
-                publisher = item.get('publisher', 'Unknown')
-                link = item.get('link', '')
+                publisher = item['provider'].get('displayName', 'Unknown')
+                link = item['canonicalUrl'].get('url', '')
 
                 # Format the string for easier LLM readability
                 formatted_item = (
@@ -75,7 +77,7 @@ def fetch_stock_news(
         return error_msg
 
 
-@tool("get_google_trends")
+# @tool("get_google_trends")
 def get_google_trends(
                 symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
     ) -> int:
@@ -145,3 +147,14 @@ def get_google_trends(
     except Exception as e:
         logger.error(f"Error fetching trends for {symbol}: {e}")
         return 0
+
+
+if __name__ == "__main__":
+    # Simple test cases to verify tool functionality
+    test_symbol = "PLTR"
+
+    news = fetch_stock_news(test_symbol, days_back=7)
+    print(f"News for {test_symbol}:\n", "\n".join(news))
+
+    trend_score = get_google_trends(test_symbol)
+    print(f"Google Trends Hype Score for {test_symbol}: {trend_score}")
