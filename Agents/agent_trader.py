@@ -40,12 +40,12 @@ def main():
         # This agent works independently to gather qualitative data.
         task_news = Task(
             description=f"""
-                1. Use tools to fetch latest news and Google Trends for **{symbol}**.
+                1. Use tool to fetch latest news for **{symbol}**.
                 2. Analyze the sentiment (Positive/Negative/Neutral).
                 3. Provide a summary of key catalysts.
             """,
             agent=news_agent,
-            expected_output="Sentiment: [Positive/Negative/Neutral] | News Summary: [...] | Trend Score: [value]"
+            expected_output="Sentiment: [Positive/Negative/Neutral] | News Summary: [...] "
 
         )
 
@@ -53,17 +53,19 @@ def main():
         # This agent fetches hard numbers. It doesn't strictly need the news, but runs in parallel/sequence.
         task_technical = Task(
             description=f"""
-            1. Call 'calculate RSI and MACD values and determine trend' ONCE for {symbol}
-            2. Based on the results:
-               - RSI < 30 AND MACD Bullish → BUY signal
-               - RSI > 70 AND MACD Bearish → SELL signal  
+            1. Review the Sentiment Analysis from the News Agent for {symbol}.
+            2. Call 'calculate RSI and MACD values and determine trend' ONCE for {symbol}.
+            3. Based on the results AND sentiment:
+               - RSI < 30 AND MACD Bullish AND Positive/Neutral sentiment → BUY signal
+               - RSI > 70 AND MACD Bearish AND Negative/Neutral sentiment → SELL signal  
+               - If sentiment strongly contradicts technical indicators, mention this conflict
                - Otherwise → WAIT signal
-            3. Output format: "DECISION: [BUY/SELL/WAIT] | RSI: [value] | MACD: [Bullish/Bearish] | Price: [value]"
-            4. Do NOT call tools again after getting valid data.
+            4. Output format: "DECISION: [BUY/SELL/WAIT] | RSI: [value] | MACD: [Bullish/Bearish] | Price: [value] | Sentiment Alignment: [Aligned/Conflicted]"
+            5. Do NOT call tools again after getting valid data.
             """,
             agent=technical_agent,
-            context=[task_news],  # Use the news to potentially inform technical decisions
-            expected_output="JSON-like output with decision, RSI, MACD, and Current Price."
+            context=[task_news],  # Incorporate sentiment to validate technical signals
+            expected_output="JSON-like output with decision, RSI, MACD, Current Price, and sentiment alignment status."
         )
 
         # Task 3: Risk Calculation

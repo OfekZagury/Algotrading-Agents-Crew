@@ -1,7 +1,7 @@
 from crewai import Agent
 from langchain_openai import ChatOpenAI
 
-from Agents.Tools.sentiment_analyst_tools import fetch_stock_news, get_google_trends
+from Agents.Tools.sentiment_analyst_tools import fetch_stock_news
 from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
 from Agents.Tools.risk_management_tools import find_support_level, calculate_risk_parameters
 from Agents.Tools.execution_agent_tools import get_buying_power, submit_bracket_order
@@ -16,18 +16,16 @@ class TradingAgents:
             goal='Analyze market news and sentiment ONLY for the stocks [PLTR (palantir), NFLX (netflix), PLTK (playtika)] to determine market mood.',
             backstory="""You are an expert market analyst executing a strict two-step workflow:
 
-            1. Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
-            2. Use `get_google_trends` to validate sentiment intensity. High trends amplify the news impact; low trends suggest weak market interest.
+            Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.
             
             If tools return empty/null, output "INSUFFICIENT DATA - Cannot Assess Sentiment"
             
             Your final output must strictly follow this format:
             - Sentiment: Positive / Negative / Neutral
             - News Summary: (Key drivers found)
-            - Trend Score: (Value & explanation of how it impacts your confidence)
             """,
             verbose=True,
-            tools=[fetch_stock_news, get_google_trends],
+            tools=[fetch_stock_news],
             llm=self.llm,
             allow_delegation=False
         )

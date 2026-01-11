@@ -45,17 +45,20 @@ def fetch_stock_news(
             item = item['content']
             # yfinance returns timestamp in unix format
             publish_time = item.get('pubDate', 0)
-            publish_date = datetime.fromisoformat(publish_time)
+            publish_date_with_tz = datetime.fromisoformat(publish_time)
+            publish_date = publish_date_with_tz.replace(tzinfo=None)
 
             if publish_date > cutoff_date:
                 title = item.get('title', 'No Title')
                 publisher = item['provider'].get('displayName', 'Unknown')
                 link = item['canonicalUrl'].get('url', '')
+                summary = item.get('summary', 'No Summary')
 
                 # Format the string for easier LLM readability
                 formatted_item = (
                     f"--- NEWS ITEM ---\n"
                     f"Title: {title}\n"
+                    f"summary: {summary}\n"
                     f"Publisher: {publisher}\n"
                     f"Date: {publish_date.strftime('%Y-%m-%d %H:%M')}\n"
                     f"Link: {link}\n"
@@ -75,86 +78,3 @@ def fetch_stock_news(
     except Exception as e:
         error_msg = [f"Error fetching news for {symbol}: {str(e)}"]
         return error_msg
-
-
-# @tool("get_google_trends")
-def get_google_trends(
-                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
-    ) -> int:
-    """
-    Checks the Google Trends 'Hype' score (0-100) for a stock symbol via SerpApi.
-    Returns:
-        int: A score between 0 (no interest) and 100 (peak popularity).
-    """
-    # Cache key valid for the current day (trends don't change every minute)
-    cache_key = f"trends_{symbol}_{datetime.now().strftime('%Y-%m-%d')}"
-
-    if cache_key in cache:
-        return cache[cache_key]
-
-    logger.info(f"Checking Google Trends for {symbol}...")
-
-    api_key = os.getenv("SERPAPI_API_KEY")
-    if not api_key:
-        logger.error("SERPAPI_API_KEY not found in environment variables.")
-        return -1  # Return -1 to indicate missing API key, not zero interest
-
-    try:
-        # Append "stock" to the query to filter out non-financial noise (e.g., Netflix the movie vs stock)
-        query = f"{symbol} stock"
-
-        params = {
-            "engine": "google_trends",
-            "q": query,
-            "data_type": "TIMESERIES",
-            "date": "now 7-d",  # Check the last 7 days
-            "api_key": api_key
-        }
-
-        search = GoogleSearch(params)
-
-        # Retry logic for network failures
-        results = None
-        for attempt in range(3):
-            try:
-                results = search.get_dict()
-                break
-            except Exception as e:
-                if attempt == 2:
-                    logger.error(f"SerpAPI failed after 3 attempts: {e}")
-                    return 0
-                logger.warning(f"SerpAPI attempt {attempt + 1} failed, retrying...")
-                sleep(1)
-
-        # Extract data from the complex JSON response
-        interest_over_time = results.get("interest_over_time", {})
-        timeline_data = interest_over_time.get("timeline_data", [])
-
-        if not timeline_data:
-            cache[cache_key] = 0
-            return 0
-
-        # Get the most recent data point (the last item in the list)
-        latest_data_point = timeline_data[-1]
-        values = latest_data_point.get("values", [])
-
-        hype_score = int(values[0]) if values else 0
-
-        # Save to Cache
-        cache[cache_key] = hype_score
-        return hype_score
-
-    except Exception as e:
-        logger.error(f"Error fetching trends for {symbol}: {e}")
-        return 0
-
-
-if __name__ == "__main__":
-    # Simple test cases to verify tool functionality
-    test_symbol = "PLTR"
-
-    news = fetch_stock_news(test_symbol, days_back=7)
-    print(f"News for {test_symbol}:\n", "\n".join(news))
-
-    trend_score = get_google_trends(test_symbol)
-    print(f"Google Trends Hype Score for {test_symbol}: {trend_score}")
