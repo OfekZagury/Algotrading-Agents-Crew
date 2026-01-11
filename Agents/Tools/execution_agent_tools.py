@@ -5,6 +5,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
 from crewai.tools import tool
 from core.logger import setup_logger
 from typing import Annotated
+from pydantic import Field
 
 logger = setup_logger()
 
@@ -49,10 +50,10 @@ def get_buying_power() -> float:
 
 @tool("Submits a BRACKET ORDER to Alpaca with Take Profit and Stop Loss")
 def submit_bracket_order(
-        symbol: Annotated[str, "The stock ticker to buy (e.g., 'AAPL')."],
-        take_profit_price: Annotated[float, "The price to set for the Take Profit order."],
-        stop_loss_price: Annotated[float, "The price to set for the Stop Loss order."],
-        qty: Annotated[int, "Number of shares to buy (default is 1 for safety)."] = 1
+        symbol: Annotated[str, Field(description="The stock ticker to buy (e.g., 'AAPL').")],
+        take_profit_price: Annotated[float, Field(description="The price to set for the Take Profit order.")],
+        stop_loss_price: Annotated[float, Field(description="The price to set for the Stop Loss order.")],
+        qty: Annotated[int, Field(description="Number of shares to buy (default is 1 for safety).")] = 1
     ) -> dict:
     """
     Submits a complex BRACKET ORDER to Alpaca.

@@ -6,6 +6,7 @@ from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
 from typing import Annotated
+from pydantic import Field
 
 logger = setup_logger()
 
@@ -32,8 +33,8 @@ def validate_symbol(symbol: str) -> bool:
 
 @tool("get_historical_data of candlestick data")
 def get_historical_data(
-        symbol: Annotated[str, "The stock ticker (e.g., 'AAPL')."],
-        period: Annotated[str, "Data period to download (e.g., '1mo', '3mo', '1y')."] = "1mo"
+        symbol: Annotated[str, Field(description="The stock ticker (e.g., 'AAPL').")],
+        period: Annotated[str, Field(description="Data period to download (e.g., '1mo', '3mo', '1y').")] = "1mo"
     ) -> str:
     """
     Fetches historical OHLCV (Open, High, Low, Close, Volume) data.
@@ -72,7 +73,7 @@ def get_historical_data(
 
 @tool("calculate RSI and MACD values and determine trend")
 def calculate_indicators(
-        symbol: Annotated[str, "The stock ticker (e.g., 'AAPL')."],
+        symbol: Annotated[str, Field(description="The stock ticker (e.g., 'AAPL').")],
     ) -> dict:
     """
     Calculates technical indicators (RSI, MACD) for the given stock.

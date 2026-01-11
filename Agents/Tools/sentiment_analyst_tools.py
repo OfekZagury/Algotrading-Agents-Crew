@@ -7,6 +7,7 @@ from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
 from typing import Annotated
+from pydantic import Field
 from datetime import datetime
 
 logger = setup_logger()
@@ -17,8 +18,8 @@ cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-use
 
 @tool("fetch_stock_news")
 def fetch_stock_news(
-                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
-                days_back: Annotated[int, "How many days back to filter news"] = 4
+                symbol: Annotated[str, Field(description="The stock ticker (e.g., 'PLTR')")],
+                days_back: Annotated[int, Field(description="How many days back to filter news")] = 4
     ) -> list[str]:
     """
     Fetches news headlines for a given stock symbol using yfinance.

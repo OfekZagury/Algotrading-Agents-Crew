@@ -4,6 +4,7 @@ from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
 from typing import Annotated
+from pydantic import Field
 
 logger = setup_logger()
 
@@ -14,7 +15,7 @@ cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-use
 
 @tool("Find Important Support Level (30 Days)")
 def find_support_level(
-                symbol: Annotated[str, "The stock ticker (e.g., 'PLTR')"],
+                symbol: Annotated[str, Field(description="The stock ticker (e.g., 'PLTR')")],
     ) -> float:
     """
     Identifies the significant support level based on the lowest low of the last 30 trading days.
@@ -59,8 +60,8 @@ def find_support_level(
 
 @tool("Calculate Risk Parameters (1:3 R/R)")
 def calculate_risk_parameters(
-        current_price: Annotated[float, "The current market price."],
-        support_level: Annotated[float, "The identified support level."]
+        current_price: Annotated[float, Field(description="The current market price.")],
+        support_level: Annotated[float, Field(description="The identified support level.")]
     ) -> dict:
     """
     Calculates precise trade parameters based on the 1:3 Risk/Reward rule.
