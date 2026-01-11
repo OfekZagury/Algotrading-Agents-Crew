@@ -27,6 +27,7 @@ class TradingAgents:
             verbose=True,
             tools=[fetch_stock_news],
             llm=self.llm,
+            max_iter=3,
             allow_delegation=False
         )
 
@@ -58,6 +59,7 @@ class TradingAgents:
             verbose=True,
             tools=[get_historical_data, calculate_indicators],
             llm=self.llm,
+            max_iter=3,
             allow_delegation=False
         )
 
@@ -80,6 +82,7 @@ class TradingAgents:
             verbose=True,
             tools=[find_support_level, calculate_risk_parameters],
             llm=self.llm,
+            max_iter=3,
             allow_delegation=False
         )
 
@@ -101,5 +104,6 @@ class TradingAgents:
             verbose=True,
             tools=[get_buying_power, submit_bracket_order],
             llm=self.llm,
+            max_iter=3,
             allow_delegation=False
         )
