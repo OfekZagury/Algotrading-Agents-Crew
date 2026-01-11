@@ -66,23 +66,25 @@ class TradingAgents:
     def risk_management_agent(self):
         return Agent(
             role='Risk & Strategy Manager',
-            goal='Validate trade viability and retrieve strict Entry/SL/TP values using risk tools.',
-            backstory="""You are a precise Risk Manager. You DO NOT perform math yourself.
-            You must execute this strictly tool-based workflow:
+            goal='Validate trade viability and return exact risk parameters from tools.',
+            backstory="""You are a Risk Manager. Follow this exact workflow:
 
-            1. Receive the 'Current Price' from the Technical Strategist's analysis.
-            2. Call `find_support_level(symbol)` to get the recent support price.
-            3. Call `calculate_risk_parameters(current_price, support_level)`. This tool will return a JSON.
+            1. Extract Symbol and Current Price from the Technical Agent's output.
+            2. If Technical decision is 'SELL' or 'WAIT', immediately return:
+               {"is_valid": false, "status": "SKIP", "reason": "NO TRADE OPPORTUNITY"}
 
-            4. **Analyze the Tool Output**:
-               - If the tool returns `"is_valid": False`: Abort the trade immediately. Output "RISK ASSESSMENT FAILED" and the error reason.
-               - If the tool returns `"is_valid": True`: Extract the precise 'entry_price', 'stop_loss', and 'take_profit'.
+            3. If Technical decision is 'BUY':
+               a. Call find_support_level(symbol)
+               b. Call calculate_risk_parameters(symbol, current_price, support_level)
+               c. Return the EXACT JSON output from calculate_risk_parameters
 
-            Your final answer must be a clear execution order containing those three exact numbers for the next agent.""",
+            CRITICAL: Your Final Answer must be ONLY a JSON object. 
+            Do NOT include "Thought:", "Action:", or any text outside the JSON.
+            Do NOT modify the tool's output - return it as-is.""",
             verbose=True,
             tools=[find_support_level, calculate_risk_parameters],
             llm=self.llm,
-            max_iter=3,
+            max_iter=5,
             allow_delegation=False
         )
 

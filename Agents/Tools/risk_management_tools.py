@@ -60,6 +60,7 @@ def find_support_level(
 
 @tool("Calculate Risk Parameters (1:3 R/R)")
 def calculate_risk_parameters(
+        symbol: Annotated[str, Field(description="The stock ticker (e.g., 'PLTR')")],
         current_price: Annotated[float, Field(description="The current market price.")],
         support_level: Annotated[float, Field(description="The identified support level.")]
     ) -> dict:
@@ -107,14 +108,15 @@ def calculate_risk_parameters(
         take_profit = current_price + (risk_per_share * 3)
 
         result = {
+            "is_valid": True,
+            "symbol": symbol,
             "entry_price": round(current_price, 2),
-            "stop_loss": round(stop_loss, 2),
-            "take_profit": round(take_profit, 2),
+            "stop_loss_price": round(stop_loss, 2),
+            "take_profit_price": round(take_profit, 2),
             "risk_per_share": round(risk_per_share, 2),
             "risk_reward_ratio": "1:3",
-            "is_valid": True
+            "qty": (1000 / current_price)
         }
-
         return result
 
     except Exception as e:

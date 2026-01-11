@@ -72,14 +72,35 @@ def main():
         # CRITICAL: This task receives the output from 'task_technical' via 'context'.
         task_risk = Task(
             description=f"""
-                1. Read the Technical Agent's output on {symbol}.
-                2. If decision is 'SELL' or 'WAIT', output "NO TRADE OPPORTUNITY" and stop.
-                3. If 'BUY', use the `find_support_level` and `calculate_risk_parameters` tools.
-                4. Return a validated JSON with Entry, Stop Loss, and Take Profit.
+                1. Read Technical Agent's decision for {symbol}
+                2. If 'SELL'/'WAIT' → Return skip JSON
+                3. If 'BUY' → Call tools and return their output unchanged
+                4. Output ONLY valid JSON - no markdown, no text
             """,
             agent=risk_agent,
-            context=[task_technical],  # <--- This links the output of Technical Agent to Risk Agent
-            expected_output="A JSON object with trade parameters or a skip message."
+            context=[task_technical],
+            expected_output="""
+            ONLY ONE of these JSON objects (no markdown, no extra text):
+
+            Valid trade:
+            {
+              "is_valid": true,
+              "symbol": "<TICKER>",
+              "entry_price": <number>,
+              "stop_loss_price": <number>,
+              "take_profit_price": <number>,
+              "risk_per_share": <number>,
+              "risk_reward_ratio": "1:3",
+              "qty": <integer>
+            }
+
+            Or skip:
+            {
+              "is_valid": false,
+              "status": "SKIP",
+              "reason": "NO TRADE OPPORTUNITY"
+            }
+            """
         )
 
         # Task 4: Execution
