@@ -115,7 +115,7 @@ def calculate_risk_parameters(
             "take_profit_price": round(take_profit, 2),
             "risk_per_share": round(risk_per_share, 2),
             "risk_reward_ratio": "1:3",
-            "qty": (1000 / current_price)
+            "qty": (20,000 / current_price)
         }
         return result
 

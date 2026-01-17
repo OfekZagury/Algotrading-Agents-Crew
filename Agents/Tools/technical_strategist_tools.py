@@ -141,8 +141,14 @@ def calculate_indicators(
         # If MACD line > Signal line => Bullish
         trend = "Bullish" if macd_val > signal_val else "Bearish"
 
+        if trend == "Bullish" and rsi_val < 45:
+            action = "BUY"
+        else:
+            action = "WAIT"
+
         # Construct the result dictionary
         result = {
+            "Decision": action,
             "symbol": symbol,
             "RSI": round(float(rsi_val), 2),
             "MACD_Line": round(float(macd_val), 4),

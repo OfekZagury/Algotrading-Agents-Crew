@@ -30,7 +30,7 @@ def main():
     execution_agent = agents_factory.execution_agent()
 
     # List of stocks to trade
-    symbols = ['PLTR', 'NFLX', 'PLTK']
+    symbols = ['NFLX']
 
     for symbol in symbols:
         logger.info(f"\n\n--- Starting Analysis for {symbol} ---")
