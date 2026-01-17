@@ -84,7 +84,7 @@ class TradingAgents:
             verbose=True,
             tools=[find_support_level, calculate_risk_parameters],
             llm=self.llm,
-            max_iter=5,
+            max_iter=3,
             allow_delegation=False
         )
 

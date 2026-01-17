@@ -58,7 +58,7 @@ def find_support_level(
         return 0.0
 
 
-@tool("Calculate Risk Parameters (1:3 R/R)")
+@tool("Calculate Risk Parameters (1:3 R/R)", result_as_answer=True)
 def calculate_risk_parameters(
         symbol: Annotated[str, Field(description="The stock ticker (e.g., 'PLTR')")],
         current_price: Annotated[float, Field(description="The current market price.")],
@@ -76,33 +76,12 @@ def calculate_risk_parameters(
     """
 
     try:
-        # Validate inputs are positive
-        if current_price <= 0 or support_level <= 0:
-            return {
-                "error": "Invalid price inputs: Prices must be positive",
-                "is_valid": False
-            }
-
-        # Check if current price is below support (invalid setup)
-        if current_price < support_level:
-            return {
-                "error": "Invalid Setup: Current price is below support level",
-                "is_valid": False
-            }
-
         # 1. Calculate Stop Loss with a 2% buffer below support
         stop_loss = support_level * 0.98
 
         # 2. Calculate the Risk per share
         risk_per_share = current_price - stop_loss
 
-        # Safety Check: If current price is already below the calculated stop loss,
-        # or if the risk is negative/zero, this is a bad trade setup.
-        if risk_per_share <= 0:
-            return {
-                "error": "Invalid Setup: Current price is too close to or below the stop loss level.",
-                "is_valid": False
-            }
 
         # 3. Calculate Take Profit (1:3 Ratio)
         take_profit = current_price + (risk_per_share * 3)

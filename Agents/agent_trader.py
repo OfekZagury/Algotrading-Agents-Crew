@@ -64,7 +64,6 @@ def main():
             5. Do NOT call tools again after getting valid data.
             """,
             agent=technical_agent,
-            context=[task_news],  # Incorporate sentiment to validate technical signals
             expected_output="JSON-like output with decision, RSI, MACD, Current Price, and sentiment alignment status."
         )
 
@@ -78,7 +77,6 @@ def main():
                 4. Output ONLY valid JSON - no markdown, no text
             """,
             agent=risk_agent,
-            context=[task_technical],
             expected_output="""
             ONLY ONE of these JSON objects (no markdown, no extra text):
 
@@ -112,7 +110,6 @@ def main():
                 3. If valid, check buying power and submit the BRACKET ORDER to Alpaca.
             """,
             agent=execution_agent,
-            context=[task_risk],  # <--- This links the output of Risk Agent to Execution Agent
             expected_output="Final transaction log: Order ID and status, or reason for no trade."
         )
 

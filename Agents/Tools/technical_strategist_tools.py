@@ -71,7 +71,7 @@ def get_historical_data(
         return f"Error fetching historical data: {str(e)}"
 
 
-@tool("calculate RSI and MACD values and determine trend")
+@tool("calculate RSI and MACD values and determine trend", result_as_answer=True)
 def calculate_indicators(
         symbol: Annotated[str, Field(description="The stock ticker (e.g., 'AAPL').")],
     ) -> dict:
