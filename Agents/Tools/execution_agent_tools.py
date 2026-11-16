@@ -4,10 +4,14 @@ from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopL
 from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
 from crewai.tools import tool
 from core.logger import setup_logger
+from core.rate_limiter import RateLimiter
 from typing import Annotated
 from pydantic import Field
 
 logger = setup_logger()
+
+# Alpaca allows 200 requests per minute per account - stay safely below it.
+alpaca_limiter = RateLimiter(max_calls=150, period_seconds=60)
 
 # Initialize the client (Assumption: keys are in .env)
 # Note: paper=True is critical for paper trading!
@@ -35,6 +39,7 @@ def get_buying_power() -> float:
         return 0.0
 
     try:
+        alpaca_limiter.allow_request("alpaca_api")
         account = trading_client.get_account()
         # Buying power for day trading is usually 4x cash, but we look at 'cash' or 'regt_buying_power'
         buying_power = float(account.buying_power)
@@ -95,6 +100,7 @@ def submit_bracket_order(
         )
 
         # Submit the order to Alpaca
+        alpaca_limiter.allow_request("alpaca_api")
         order = trading_client.submit_order(order_data=market_order_data)
 
         result = {

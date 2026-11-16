@@ -13,6 +13,9 @@ logger = setup_logger()
 # Initialize file-based cache
 cache = Cache(".cache", size_limit=int(1e9), eviction_policy='least-recently-used')
 
+# Dollar amount allocated to a single trade
+POSITION_SIZE_USD = 20_000
+
 @tool("Find Important Support Level (30 Days)")
 def find_support_level(
                 symbol: Annotated[str, Field(description="The stock ticker (e.g., 'PLTR')")],
@@ -81,7 +84,15 @@ def calculate_risk_parameters(
 
         # 2. Calculate the Risk per share
         risk_per_share = current_price - stop_loss
+        if risk_per_share <= 0:
+            return {"is_valid": False, "status": "SKIP",
+                    "reason": "Current price is at or below the stop loss level"}
 
+        # Position size: as many whole shares as fit in POSITION_SIZE_USD
+        qty = int(POSITION_SIZE_USD // current_price)
+        if qty < 1:
+            return {"is_valid": False, "status": "SKIP",
+                    "reason": f"Price is above the position size of ${POSITION_SIZE_USD:,}"}
 
         # 3. Calculate Take Profit (1:3 Ratio)
         take_profit = current_price + (risk_per_share * 3)
@@ -94,7 +105,7 @@ def calculate_risk_parameters(
             "take_profit_price": round(take_profit, 2),
             "risk_per_share": round(risk_per_share, 2),
             "risk_reward_ratio": "1:3",
-            "qty": (20,000 / current_price)
+            "qty": qty
         }
         return result
 

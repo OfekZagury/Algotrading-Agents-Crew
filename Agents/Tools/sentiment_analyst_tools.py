@@ -2,7 +2,6 @@ import os
 from datetime import datetime, timedelta
 from time import sleep
 import yfinance as yf
-from serpapi import GoogleSearch
 from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
