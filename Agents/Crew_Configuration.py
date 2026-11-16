@@ -1,5 +1,6 @@
-from crewai import Agent
-from langchain_openai import ChatOpenAI
+import os
+
+from crewai import Agent, LLM
 
 from Agents.Tools.sentiment_analyst_tools import fetch_stock_news
 from Agents.Tools.technical_strategist_tools import get_historical_data, calculate_indicators
@@ -8,12 +9,16 @@ from Agents.Tools.execution_agent_tools import get_buying_power, submit_bracket_
 
 class TradingAgents:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-5", temperature=0)
+        model = os.getenv("OPENAI_MODEL", "gpt-5")
+        # Reasoning models (gpt-5, o-series) only accept the default temperature;
+        # for other models keep temperature=0 for deterministic decisions.
+        is_reasoning_model = model.startswith(("gpt-5", "o1", "o3", "o4"))
+        self.llm = LLM(model=model) if is_reasoning_model else LLM(model=model, temperature=0)
 
     def sentiment_analyst_agent(self):
         return Agent(
             role='Senior Market News Analyst',
-            goal='Analyze market news and sentiment ONLY for the stocks [PLTR (palantir), NFLX (netflix), PLTK (playtika)] to determine market mood.',
+            goal='Analyze market news and sentiment ONLY for the stock symbol given in the task to determine market mood.',
             backstory="""You are an expert market analyst executing a strict two-step workflow:
 
             Use `fetch_stock_news` to identify key catalysts (earnings, upgrades, macro events) while strictly filtering out noise.

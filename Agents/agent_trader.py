@@ -1,12 +1,30 @@
+import os
+import sys
+
 from dotenv import load_dotenv
-from crewai import Crew, Process, Task
-from Agents.Crew_Configuration import TradingAgents
-from core.logger import setup_logger
+
+# Load environment variables (API keys) BEFORE importing the agents:
+# the Alpaca client is created when the tools module is imported.
+load_dotenv()
+
+from crewai import Crew, Process, Task  # noqa: E402
+from Agents.Crew_Configuration import TradingAgents  # noqa: E402
+from core.logger import setup_logger  # noqa: E402
 
 logger = setup_logger()
 
-# Load environment variables (API keys)
-load_dotenv()
+DEFAULT_SYMBOLS = ['NFLX']
+
+
+def get_symbols():
+    """Symbols from the command line (python -m Agents.agent_trader NFLX PLTR),
+    then the TRADING_SYMBOLS env var (comma separated), then the default."""
+    if len(sys.argv) > 1:
+        return [s.upper() for s in sys.argv[1:]]
+    env_symbols = os.getenv("TRADING_SYMBOLS")
+    if env_symbols:
+        return [s.strip().upper() for s in env_symbols.split(",") if s.strip()]
+    return DEFAULT_SYMBOLS
 
 
 def main():
@@ -30,7 +48,7 @@ def main():
     execution_agent = agents_factory.execution_agent()
 
     # List of stocks to trade
-    symbols = ['NFLX']
+    symbols = get_symbols()
 
     for symbol in symbols:
         logger.info(f"\n\n--- Starting Analysis for {symbol} ---")

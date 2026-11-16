@@ -1,8 +1,0 @@
-crewai
-langchain
-yfinance
-serpapi
-diskcache
-pandas_ta
-alpaca-py
-pytest

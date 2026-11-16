@@ -1,0 +1,8 @@
+crewai
+yfinance
+pandas
+pandas-ta
+alpaca-py
+diskcache
+python-dotenv
+pytest
