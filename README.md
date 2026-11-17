@@ -4,7 +4,7 @@ A multi-agent trading system built with **CrewAI**: four specialised LLM agents 
 
 > **Paper trading only.** This is an educational project, not financial advice. The execution client is hard-wired to Alpaca's paper environment (`paper=True`).
 
-There is also a **web UI** (`streamlit_app.py`): pick a stock, press *Run the crew* and watch each agent's result appear as soon as it finishes. The web UI always runs in simulation mode, so the execution agent builds the bracket order but never sends it.
+**[▶ Live demo](https://algotrading-agents-crew.streamlit.app/)**: a **web UI** (`streamlit_app.py`) where you pick a stock, press *Run the crew* and watch each agent's result appear as soon as it finishes. The web UI always runs in simulation mode, so the execution agent builds the bracket order but never sends it.
 
 ## How it works
 

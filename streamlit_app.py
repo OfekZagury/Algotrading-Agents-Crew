@@ -256,10 +256,8 @@ with right:
                 break
             else:
                 shared_store()["results"][symbol] = {"outputs": outputs, "at": time.time()}
-                with panel.container():
-                    render_summary(symbol, outputs)
-                    render_agent_cards(outputs)
-                break
+                # Rerun so the whole page reflects the new state (cached result, runs left).
+                st.rerun()
     else:
         with panel.container():
             st.info("Pick a stock and press **Run the crew** to watch the four agents work step by step.")
