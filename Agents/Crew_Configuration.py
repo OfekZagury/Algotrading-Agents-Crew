@@ -7,13 +7,26 @@ from Agents.Tools.technical_strategist_tools import get_historical_data, calcula
 from Agents.Tools.risk_management_tools import find_support_level, calculate_risk_parameters
 from Agents.Tools.execution_agent_tools import get_buying_power, submit_bracket_order
 
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite"
+
+
+def build_llm():
+    """Gemini when GEMINI_API_KEY is set (the hosted demo), otherwise OpenAI."""
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        model = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
+        return LLM(model=f"gemini/{model}", api_key=gemini_key, temperature=0)
+
+    model = os.getenv("OPENAI_MODEL", "gpt-5")
+    # Reasoning models (gpt-5, o-series) only accept the default temperature;
+    # for other models keep temperature=0 for deterministic decisions.
+    is_reasoning_model = model.startswith(("gpt-5", "o1", "o3", "o4"))
+    return LLM(model=model) if is_reasoning_model else LLM(model=model, temperature=0)
+
+
 class TradingAgents:
     def __init__(self):
-        model = os.getenv("OPENAI_MODEL", "gpt-5")
-        # Reasoning models (gpt-5, o-series) only accept the default temperature;
-        # for other models keep temperature=0 for deterministic decisions.
-        is_reasoning_model = model.startswith(("gpt-5", "o1", "o3", "o4"))
-        self.llm = LLM(model=model) if is_reasoning_model else LLM(model=model, temperature=0)
+        self.llm = build_llm()
 
     def sentiment_analyst_agent(self):
         return Agent(

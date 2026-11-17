@@ -1,6 +1,6 @@
 import pandas as pd
 import pandas_ta as ta
-import yfinance as yf
+from Agents.Tools.market_data import get_history, is_valid_symbol
 from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
@@ -22,10 +22,8 @@ def validate_symbol(symbol: str) -> bool:
         bool: True if valid, False otherwise.
     """
     try:
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-        # Check if the ticker has a valid symbol or regularMarketPrice
-        return 'symbol' in info or 'regularMarketPrice' in info
+        # A symbol is valid if any data source returns recent candles for it
+        return is_valid_symbol(symbol)
     except Exception as e:
         logger.error(f"Symbol validation failed for {symbol}: {e}")
         return False
@@ -54,8 +52,8 @@ def get_historical_data(
         if not validate_symbol(symbol):
             return f"Invalid or unknown stock symbol: {symbol}"
 
-        # Download data using yfinance
-        df = yf.Ticker(symbol).history(period=period)
+        # Download data (Yahoo Finance, falling back to Alpaca)
+        df = get_history(symbol, period)
 
         if df.empty:
             return f"No data found for symbol {symbol}"
@@ -95,7 +93,7 @@ def calculate_indicators(
 
         # Fetch enough data for MACD (requires at least 26 periods)
         # We fetch 3 months to be safe and accurate
-        df = yf.Ticker(symbol).history(period="3mo")
+        df = get_history(symbol, "3mo")
 
         if df.empty or len(df) < 26:
             return {"error": "Insufficient data for calculations"}

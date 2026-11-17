@@ -1,4 +1,4 @@
-import yfinance as yf
+from Agents.Tools.market_data import get_history
 from datetime import datetime
 from diskcache import Cache
 from crewai.tools import tool
@@ -35,7 +35,7 @@ def find_support_level(
 
     try:
         # We fetch 2 months to ensure we have at least 30 trading days
-        df = yf.Ticker(symbol).history(period="2mo")
+        df = get_history(symbol, "2mo")
 
         if df.empty:
             logger.error(f"No historical data found for {symbol}")

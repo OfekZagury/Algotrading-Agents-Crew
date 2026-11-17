@@ -1,5 +1,7 @@
-crewai
+crewai[google-genai]
+streamlit
 yfinance
+requests
 pandas
 pandas-ta
 alpaca-py

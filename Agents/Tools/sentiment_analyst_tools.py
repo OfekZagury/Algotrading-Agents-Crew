@@ -1,7 +1,7 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import sleep
-import yfinance as yf
+from Agents.Tools.market_data import get_news
 from diskcache import Cache
 from crewai.tools import tool
 from core.logger import setup_logger
@@ -21,7 +21,7 @@ def fetch_stock_news(
                 days_back: Annotated[int, Field(description="How many days back to filter news")] = 4
     ) -> list[str]:
     """
-    Fetches news headlines for a given stock symbol using yfinance.
+    Fetches recent news headlines for a stock (Yahoo Finance, falling back to Google News).
     Returns:
         list[str]: A list of formatted news strings ready for the Agent to read.
     """
@@ -35,35 +35,18 @@ def fetch_stock_news(
     logger.info(f"Fetching fresh news for {symbol}...")
 
     try:
-        ticker = yf.Ticker(symbol)
-        news_items = ticker.news
-
         filtered_news = []
-        cutoff_date = datetime.now() - timedelta(days=days_back)
-
-        for item in news_items:
-            item = item['content']
-            # yfinance returns timestamp in unix format
-            publish_time = item.get('pubDate', 0)
-            publish_date_with_tz = datetime.fromisoformat(publish_time)
-            publish_date = publish_date_with_tz.replace(tzinfo=None)
-
-            if publish_date > cutoff_date:
-                title = item.get('title', 'No Title')
-                publisher = item['provider'].get('displayName', 'Unknown')
-                link = item['canonicalUrl'].get('url', '')
-                summary = item.get('summary', 'No Summary')
-
-                # Format the string for easier LLM readability
-                formatted_item = (
-                    f"--- NEWS ITEM ---\n"
-                    f"Title: {title}\n"
-                    f"summary: {summary}\n"
-                    f"Publisher: {publisher}\n"
-                    f"Date: {publish_date.strftime('%Y-%m-%d %H:%M')}\n"
-                    f"Link: {link}\n"
-                )
-                filtered_news.append(formatted_item)
+        for item in get_news(symbol, days_back=days_back):
+            # Format the string for easier LLM readability
+            formatted_item = (
+                f"--- NEWS ITEM ---\n"
+                f"Title: {item['title']}\n"
+                f"summary: {item['summary'] or 'No Summary'}\n"
+                f"Publisher: {item['publisher']}\n"
+                f"Date: {item['date'].strftime('%Y-%m-%d %H:%M')}\n"
+                f"Link: {item['link']}\n"
+            )
+            filtered_news.append(formatted_item)
 
         # If no news found, return a generic message
         if not filtered_news:
