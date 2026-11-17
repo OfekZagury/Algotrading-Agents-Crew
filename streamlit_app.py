@@ -41,7 +41,11 @@ for _stream in (sys.stdout, sys.stderr):
     except Exception:
         pass
 
+# Suggestions in the dropdown; visitors can also type any other ticker.
 SYMBOLS = ["NFLX", "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "PLTR"]
+# Tickers only: letters/digits with an optional class suffix (BRK-B, BRK.B).
+# This also keeps free text out of the agents' prompts.
+TICKER_PATTERN = re.compile(r"^[A-Z0-9]{1,6}([.-][A-Z0-9]{1,3})?$")
 MAX_RUNS_PER_VISITOR = 3   # per browser session
 MAX_RUNS_PER_DAY = 40      # across all visitors, keeps the API budget predictable
 RESULT_TTL_SECONDS = 3600  # a symbol's result is reused for an hour
@@ -82,9 +86,20 @@ def reserve_daily_run():
         return True
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=3600, max_entries=300, show_spinner=False)
+def _cached_price_history(symbol):
+    history = get_history(symbol, "3mo")
+    if history.empty:
+        raise LookupError(symbol)  # exceptions aren't cached, so a temporary miss is retried
+    return history
+
+
 def price_history(symbol):
-    return get_history(symbol, "3mo")
+    """Three months of daily prices, or None if the ticker has no data."""
+    try:
+        return _cached_price_history(symbol)
+    except LookupError:
+        return None
 
 
 # ---------------------------------------------------------------- result parsing
@@ -182,24 +197,37 @@ if "runs" not in st.session_state:
 
 left, right = st.columns([1, 2], gap="large")
 with left:
-    symbol = st.selectbox("Stock", SYMBOLS, index=0)
-    history = price_history(symbol)
-    if not history.empty:
+    choice = st.selectbox(
+        "Stock ticker",
+        SYMBOLS,
+        index=0,
+        accept_new_options=True,
+        help="Pick a suggestion or type any US stock ticker, e.g. AMD or KO.",
+    )
+    symbol = (choice or "").strip().upper()
+
+    history = price_history(symbol) if TICKER_PATTERN.match(symbol) else None
+    if history is not None:
         last, first = history["Close"].iloc[-1], history["Close"].iloc[0]
         st.metric(f"{symbol} · last close", f"${last:,.2f}", f"{(last / first - 1) * 100:+.1f}% (3 months)")
         st.line_chart(history["Close"], height=220)
+    elif TICKER_PATTERN.match(symbol):
+        st.warning(f"No price data found for **{symbol}**. Check the ticker (US-listed stocks work best).")
     else:
-        st.warning("Price data is temporarily unavailable for this symbol.")
+        st.warning("Please enter a stock ticker such as AMD, KO or BRK-B.")
+    valid_symbol = history is not None
 
-    cached = cached_result(symbol)
+    cached = cached_result(symbol) if valid_symbol else None
     visitor_left = MAX_RUNS_PER_VISITOR - st.session_state.runs
     run_clicked = st.button(
         "▶ Run the crew",
         type="primary",
         use_container_width=True,
-        disabled=cached is not None or visitor_left <= 0,
+        disabled=not valid_symbol or cached is not None or visitor_left <= 0,
     )
-    if cached:
+    if not valid_symbol:
+        st.caption("The crew runs once a valid ticker is selected.")
+    elif cached:
         minutes = int((time.time() - cached["at"]) // 60)
         st.caption(f"Showing the {symbol} run from {minutes} min ago (results are reused for an hour to keep the demo free).")
     elif visitor_left <= 0:
